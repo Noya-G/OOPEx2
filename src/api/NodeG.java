@@ -2,12 +2,12 @@ package api;
 
 import java.util.Objects;
 
-public class nodeG implements node_data {
+public class NodeG implements node_data {
     int key, tag;
     String info;
     double weighted;
 
-    public nodeG(int key) {
+    public NodeG(int key) {
         this.key = key;
     }
 
@@ -60,7 +60,7 @@ public class nodeG implements node_data {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        nodeG nodeG = (nodeG) o;
+        NodeG nodeG = (NodeG) o;
         return key == nodeG.key &&
                 tag == nodeG.tag &&
                 Double.compare(nodeG.weighted, weighted) == 0 &&
