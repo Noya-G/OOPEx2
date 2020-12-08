@@ -119,12 +119,13 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         ArrayList<Integer> container=new ArrayList<>();
         int pointer=0;
         ArrayList<node_data> gn=(ArrayList<node_data>) g.getV();
+        node_data node_pointer=gn.get(pointer);
+        container.add(node_pointer.getKey());
+        node_pointer.setTag(0);
 
         while(pointer<container.size()){
-            node_data node_pointer=gn.get(pointer);
-            container.add(node_pointer.getKey());
-            node_pointer.setTag(pointer);
-            container.add(node_pointer.getKey());
+            int key=container.get(node_pointer.getKey());
+            node_pointer=g.getNode(key);
 
             ArrayList<edge_data> node_edges=(ArrayList<edge_data>) g.getE(node_pointer.getKey());
             int neighborsSize=g.getE(node_pointer.getKey()).size();
@@ -133,6 +134,8 @@ public class DWGraph_Algo implements dw_graph_algorithms{
             //if we visit all the node neighbors:
             if(node_pointer.getTag()==1){
                 i=Integer.MAX_VALUE;
+                pointer++;
+                continue;
             }
 
             //if we didnt visit the node at all:
@@ -142,7 +145,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
 
             for( i=0; i<neighborsSize; i++){
                 int dest=node_edges.get(i).getDest();
-                if(g.getNode(dest).getTag()!=1){
+                if(g.getNode(dest).getTag()==Integer.MAX_VALUE){
                     container.add(dest);
                 }
             }
