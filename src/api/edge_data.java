@@ -43,3 +43,4 @@ public interface edge_data {
 	 */
 	public void setTag(int t);
 }
+

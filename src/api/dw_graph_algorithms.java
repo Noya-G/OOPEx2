@@ -73,3 +73,4 @@ public interface dw_graph_algorithms {
      */
     public boolean load(String file);
 }
+

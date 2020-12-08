@@ -8,3 +8,4 @@ public interface geo_location {
     public double z();
     public double distance(geo_location g);
 }
+

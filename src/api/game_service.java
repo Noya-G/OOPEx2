@@ -87,3 +87,4 @@ public interface game_service extends Serializable{
 	 */
 	public boolean login(long id);
 }
+

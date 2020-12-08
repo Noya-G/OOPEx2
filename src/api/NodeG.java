@@ -72,3 +72,4 @@ public class NodeG implements node_data {
         return Objects.hash(key, tag, info, weighted);
     }
 }
+

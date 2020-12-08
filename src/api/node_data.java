@@ -55,3 +55,4 @@ public interface node_data {
 	 */
 	public void setTag(int t);
 }
+

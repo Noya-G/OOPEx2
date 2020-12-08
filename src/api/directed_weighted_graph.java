@@ -86,3 +86,4 @@ public interface directed_weighted_graph {
  */
 	public int getMC();
 }
+
