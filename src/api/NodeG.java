@@ -9,6 +9,7 @@ public class NodeG implements node_data {
 
     public NodeG(int key) {
         this.key = key;
+        this.tag= Integer.MAX_VALUE;
     }
 
     @Override
