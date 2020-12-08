@@ -138,6 +138,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
                 continue;
             }
 
+
             //if we didnt visit the node at all:
             if(node_pointer.getTag()==Integer.MAX_VALUE){
                 node_pointer.setTag(0);
