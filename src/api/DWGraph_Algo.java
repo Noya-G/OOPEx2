@@ -54,12 +54,12 @@ public class DWGraph_Algo implements dw_graph_algorithms{
 
     @Override
     public boolean isConnected() {
-        int nodeSize=graph.nodeSize();
-        int edgeSize=graph.edgeSize();
-        ArrayList<node_data> nodeArray=(ArrayList<node_data>)graph.getV();
-        //copy
-        opsitGraph(graph);
-        return false;
+
+        boolean or = isConnectedAid(copy()); //origin connection.
+        if(or==false) return false;
+        boolean op = isConnectedAid(opsit_graph);//opsit connection.
+        if(or==true) return true; //if 'or' && 'op' both true return true.
+        return false; //else return false.
     }
 
     @Override
@@ -112,6 +112,48 @@ public class DWGraph_Algo implements dw_graph_algorithms{
                 opsit_graph.connect(dest,src,weight);
             }
         }
+    }
+
+    private boolean isConnectedAid(directed_weighted_graph g){
+        ArrayList<node_data> nodeArray=(ArrayList<node_data>)g.getV();
+        ArrayList<Integer> container=new ArrayList<>();
+        int pointer=0;
+        ArrayList<node_data> gn=(ArrayList<node_data>) g.getV();
+
+        while(pointer<container.size()){
+            node_data node_pointer=gn.get(pointer);
+            container.add(node_pointer.getKey());
+            node_pointer.setTag(pointer);
+            container.add(node_pointer.getKey());
+
+            ArrayList<edge_data> node_edges=(ArrayList<edge_data>) g.getE(node_pointer.getKey());
+            int neighborsSize=g.getE(node_pointer.getKey()).size();
+            int i=0;
+
+            //if we visit all the node neighbors:
+            if(node_pointer.getTag()==1){
+                i=Integer.MAX_VALUE;
+            }
+
+            //if we didnt visit the node at all:
+            if(node_pointer.getTag()==Integer.MAX_VALUE){
+                node_pointer.setTag(0);
+            }
+
+            for( i=0; i<neighborsSize; i++){
+                int dest=node_edges.get(i).getDest();
+                if(g.getNode(dest).getTag()!=1){
+                    container.add(dest);
+                }
+            }
+            pointer++;
+        }
+
+        if(container.size()<g.nodeSize()){
+            return false;
+        }
+
+        return true;
     }
 
 }
