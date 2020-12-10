@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import com.google.gson.Gson;
+import com.google.gson.*;
 
 
 public class DWGraph_Algo implements dw_graph_algorithms{
@@ -79,12 +80,14 @@ public class DWGraph_Algo implements dw_graph_algorithms{
 
     @Override
     public boolean save(String file) {
-        return false;
+
+        return true;
     }
 
     @Override
     public boolean load(String file) {
-        return false;
+
+        return true;
     }
 
     /////////////////////////////////////////////////////////////
@@ -186,7 +189,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
                 }
 
                 if(neighborPointer.getTag()==Integer.MAX_VALUE){
-                    container.add(node_pointer);
+                    container.add(g.getNode(dest_node));
                     neighborPointer.setTag(0);
                     double p=path_node+weight; //new path of the node.
                     paths.put(dest_node,p);
