@@ -57,6 +57,8 @@ public class NodeG implements node_data {
         tag=t;
     }
 
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
