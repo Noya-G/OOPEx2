@@ -1,7 +1,10 @@
 package api;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import com.google.gson.Gson;
+
 
 public class DWGraph_Algo implements dw_graph_algorithms{
     directed_weighted_graph graph;
@@ -9,6 +12,7 @@ public class DWGraph_Algo implements dw_graph_algorithms{
 
     public DWGraph_Algo(){
         this.graph=new DWGraph_DS();
+
     }
 
     @Override
@@ -54,22 +58,23 @@ public class DWGraph_Algo implements dw_graph_algorithms{
 
     @Override
     public boolean isConnected() {
+        opsitGraph(graph);
 
         boolean or = isConnectedAid(copy()); //origin connection.
         if(or==false) return false;
         boolean op = isConnectedAid(opsit_graph);//opsit connection.
-        if(or==true) return true; //if 'or' && 'op' both true return true.
+        if(op==true) return true; //if 'or' && 'op' both true return true.
         return false; //else return false.
     }
 
     @Override
     public double shortestPathDist(int src, int dest) {
-        return 0;
+        return shorterPathAid0(src,dest,copy());
     }
 
     @Override
     public List<node_data> shortestPath(int src, int dest) {
-        return null;
+        return shorterPathAid(src,dest, copy());
     }
 
     @Override
@@ -115,41 +120,30 @@ public class DWGraph_Algo implements dw_graph_algorithms{
     }
 
     private boolean isConnectedAid(directed_weighted_graph g){
-        ArrayList<node_data> nodeArray=(ArrayList<node_data>)g.getV();
-        ArrayList<Integer> container=new ArrayList<>();
+        ArrayList<node_data> container=new ArrayList<node_data>();
+        ArrayList<node_data> g_nodes= (ArrayList<node_data>)g.getV();
+        container.add(g_nodes.get(0));
+        g_nodes.get(0).setTag(0);
+
         int pointer=0;
-        ArrayList<node_data> gn=(ArrayList<node_data>) g.getV();
-        node_data node_pointer=gn.get(pointer);
-        container.add(node_pointer.getKey());
-        node_pointer.setTag(0);
 
-        while(pointer<container.size()){
-            int key=container.get(node_pointer.getKey());
-            node_pointer=g.getNode(key);
-
-            ArrayList<edge_data> node_edges=(ArrayList<edge_data>) g.getE(node_pointer.getKey());
-            int neighborsSize=g.getE(node_pointer.getKey()).size();
-            int i=0;
-
-            //if we visit all the node neighbors:
-            if(node_pointer.getTag()==1){
-                i=Integer.MAX_VALUE;
-                pointer++;
-                continue;
-            }
+        while (pointer<container.size()){
+            node_data node_pointer=container.get(pointer);
+            int src=node_pointer.getKey();
+            ArrayList<edge_data> nodeEdges= (ArrayList<edge_data>) g.getE(src);
 
 
-            //if we didnt visit the node at all:
-            if(node_pointer.getTag()==Integer.MAX_VALUE){
-                node_pointer.setTag(0);
-            }
-
-            for( i=0; i<neighborsSize; i++){
-                int dest=node_edges.get(i).getDest();
-                if(g.getNode(dest).getTag()==Integer.MAX_VALUE){
-                    container.add(dest);
+            for (int i=0; i<nodeEdges.size(); i++){
+                edge_data edgePointer=nodeEdges.get(i);
+                int dest=edgePointer.getDest();
+                double weight=edgePointer.getWeight();
+                node_data neighborPointer=g.getNode(dest);
+                if(neighborPointer.getTag()==Integer.MAX_VALUE){
+                    container.add(node_pointer);
+                    neighborPointer.setTag(0);
                 }
             }
+            node_pointer.setTag(1);
             pointer++;
         }
 
@@ -160,5 +154,123 @@ public class DWGraph_Algo implements dw_graph_algorithms{
         return true;
     }
 
+    private ArrayList<node_data> shorterPathAid(int src, int dest, directed_weighted_graph g){
+        ArrayList<node_data> ans=new ArrayList<>();
+        HashMap<Integer,Double> paths=new HashMap<>();
+        ArrayList<node_data> container=new ArrayList<node_data>();
+
+        ArrayList<node_data> g_nodes= (ArrayList<node_data>)g.getV();
+        paths.put(src,0.0);
+        g.getNode(src).setTag(0);
+        container.add(g.getNode(src));
+        int pointer=0;
+
+        while (pointer<container.size()){
+            node_data node_pointer=container.get(pointer);
+            int src_node=node_pointer.getKey();
+            ArrayList<edge_data> nodeEdges= (ArrayList<edge_data>) g.getE(src_node);
+            double path_node= paths.get(src_node);
+
+            for (int i=0; i<nodeEdges.size(); i++){
+                edge_data edgePointer=nodeEdges.get(i);
+                int dest_node=edgePointer.getDest(); //point to the node with that key.
+                double weight=edgePointer.getWeight();
+                node_data neighborPointer=g.getNode(dest_node);
+
+                if(neighborPointer.getTag()==0){
+                    double p=path_node+weight; //new path of the node.
+                    if(p< paths.get(dest_node)){
+                        paths.remove(dest_node);
+                        paths.put(dest_node,p);
+                    }
+                }
+
+                if(neighborPointer.getTag()==Integer.MAX_VALUE){
+                    container.add(node_pointer);
+                    neighborPointer.setTag(0);
+                    double p=path_node+weight; //new path of the node.
+                    paths.put(dest_node,p);
+                }
+            }
+            node_pointer.setTag(1);
+            pointer++;
+        }
+
+        if(paths.containsKey(dest)==false){
+            return ans;
+        }
+
+        node_data node_pointer =g.getNode(dest);
+        while(paths.containsKey(src)==false){
+           int nKey= node_pointer.getKey();
+           ArrayList<edge_data> node_edges=(ArrayList<edge_data>)g.getE(nKey);
+          double pathOfNodePointer=paths.get(nKey);
+
+           for (int i=0; i<node_edges.size(); i++){
+               int nodeFrom =node_edges.get(i).getSrc();
+               double edge_weight=node_edges.get(i).getWeight();
+               double nodePath=paths.get(nodeFrom);
+               if((edge_weight+nodePath)==pathOfNodePointer) {
+                   ans.add(g.getNode(nodeFrom));
+                   src=nodeFrom;
+                   i=Integer.MAX_VALUE;
+               }
+           }
+        }
+        ArrayList<node_data> finalAns=new ArrayList<>();
+        for (int i=ans.size()-1; i<-1; i--){
+            finalAns.add(ans.get(i));
+        }
+        return ans;
+    }
+
+    private double shorterPathAid0(int src, int dest, directed_weighted_graph g){
+        ArrayList<node_data> ans=new ArrayList<>();
+        HashMap<Integer,Double> paths=new HashMap<>();
+        ArrayList<node_data> container=new ArrayList<node_data>();
+
+        ArrayList<node_data> g_nodes= (ArrayList<node_data>)g.getV();
+        paths.put(src,0.0);
+        g.getNode(src).setTag(0);
+        container.add(g.getNode(src));
+        int pointer=0;
+
+        while (pointer<container.size()){
+            node_data node_pointer=container.get(pointer);
+            int src_node=node_pointer.getKey();
+            ArrayList<edge_data> nodeEdges= (ArrayList<edge_data>) g.getE(src_node);
+            double path_node= paths.get(src_node);
+
+            for (int i=0; i<nodeEdges.size(); i++){
+                edge_data edgePointer=nodeEdges.get(i);
+                int dest_node=edgePointer.getDest(); //point to the node with that key.
+                double weight=edgePointer.getWeight();
+                node_data neighborPointer=g.getNode(dest_node);
+
+                if(neighborPointer.getTag()==0){
+                    double p=path_node+weight; //new path of the node.
+                    if(p< paths.get(dest_node)){
+                        paths.remove(dest_node);
+                        paths.put(dest_node,p);
+                    }
+                }
+
+                if(neighborPointer.getTag()==Integer.MAX_VALUE){
+                    container.add(g.getNode(dest_node));
+                    neighborPointer.setTag(0);
+                    double p=path_node+weight; //new path of the node.
+                    paths.put(dest_node,p);
+                }
+            }
+            node_pointer.setTag(1);
+            pointer++;
+        }
+
+        if(paths.containsKey(dest)==false){
+            return -1.0;
+        }
+
+        return paths.get(dest);
+    }
 }
 

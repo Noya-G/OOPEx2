@@ -69,10 +69,36 @@ class DWGraph_AlgoTest {
 
     @Test
     void isConnected() {
+        DWGraph_Algo gAlgo = new DWGraph_Algo();
+
+        //test0:
+        directed_weighted_graph g0 = create_graph(0, 0, 1, 2, 0);
+        gAlgo.init(g0);
+        assertFalse(gAlgo.isConnected());
+
+        //test1:
+        directed_weighted_graph g1 = create_graph(0, 0, 4, 5, 0);
+        gAlgo.init(g1);
+        assertFalse(gAlgo.isConnected());
+
+        directed_weighted_graph g2 = create_graph(0, 0, 2, 2, 0);
+        gAlgo.init(g2);
+        assertTrue(gAlgo.isConnected());
+
+        //test3:
+        directed_weighted_graph g3 = connectedGraph();
+        assertTrue(gAlgo.isConnected());
     }
 
     @Test
     void shortestPathDist() {
+       directed_weighted_graph g=connectedGraph2();
+       DWGraph_Algo gAlgo=new DWGraph_Algo();
+       gAlgo.init(g);
+       assertEquals(2.0,gAlgo.shortestPathDist(0,1));
+       assertEquals(3.0,gAlgo.shortestPathDist(0,2));
+       assertEquals(3.0,gAlgo.shortestPathDist(0,5));
+       assertEquals(3.0,gAlgo.shortestPathDist(3,5));
     }
 
     @Test
@@ -96,5 +122,41 @@ class DWGraph_AlgoTest {
                 System.out.println("src: "+eg.get(j).getSrc()+", dest: "+eg.get(j).getDest()+", weighted: "+eg.get(j).getWeight());
             }
         }
+    }
+
+    private directed_weighted_graph connectedGraph(){
+        DWGraph_DS g= new DWGraph_DS();
+        for(int i=0; i<6; i++){
+            NodeG n=new NodeG(i);
+            g.addNode(n);
+        }
+        g.connect(0,1,0);
+        g.connect(1,3,0);
+        g.connect(3,5,0);
+        g.connect(0,4,0);
+        g.connect(5,0,0);
+        g.connect(0,2,0);
+        g.connect(2,5,0);
+        g.connect(4,0,0);
+
+        return g;
+    }
+
+    private directed_weighted_graph connectedGraph2(){
+        DWGraph_DS g= new DWGraph_DS();
+        for(int i=0; i<6; i++){
+            NodeG n=new NodeG(i);
+            g.addNode(n);
+        }
+        g.connect(0,1,2);
+        g.connect(1,2,1);
+        g.connect(2,5,1);
+        g.connect(0,5,3);
+        g.connect(0,3,1);
+        g.connect(4,5,1);
+        g.connect(4,2,3);
+        g.connect(3,4,2);
+
+        return g;
     }
 }
