@@ -6,10 +6,12 @@ public class NodeG implements node_data {
     int key, tag;
     String info;
     double weighted;
+    geo_location p;
 
     public NodeG(int key) {
         this.key = key;
         this.tag= Integer.MAX_VALUE;
+        this.p=new GeoLocation(0,0,0);
     }
 
     @Override
@@ -19,12 +21,12 @@ public class NodeG implements node_data {
 
     @Override
     public geo_location getLocation() {
-        return null;
+        return p;
     }
 
     @Override
     public void setLocation(geo_location p) {
-
+        this.p=p;
     }
 
     @Override

@@ -107,6 +107,10 @@ class DWGraph_AlgoTest {
 
     @Test
     void save() {
+        directed_weighted_graph g3 = connectedGraph();
+        DWGraph_Algo gAlgo=new DWGraph_Algo();
+        gAlgo.init(g3);
+        gAlgo.save("file2");
     }
 
     @Test

@@ -1,14 +1,15 @@
 package api;
 
-import java.io.File;
+
+import java.awt.desktop.FilesEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import com.google.gson.Gson;
-import java.io.PrintWriter;
+import com.google.gson.*;
 import java.io.*;
-import com.google.gson.GsonBuilder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 
@@ -85,32 +86,96 @@ public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
 
     @Override
     public boolean save(String file) {
-        Gson gson =new GsonBuilder().setPrettyPrinting().create();
-        String json=gson.toJson(graph);
-        try {
-            File file_address=new File(file);
-            PrintWriter pw=new PrintWriter(file_address);
-            pw.write(json);
-            pw.close();
+        //if the graph is empty:
+       if(graph.nodeSize()==0){
+
+       }
+       JsonObject g=new JsonObject();
+       JsonArray graph_edges=new JsonArray();
+       JsonArray graph_nodes=new JsonArray();
+
+       ArrayList<node_data> gNodes=(ArrayList<node_data>)graph.getV();
+
+       //add the nodes to the file:
+       for(int i=0; i<graph.nodeSize(); i++){
+           node_data node_pointer=gNodes.get(i);
+           JsonObject n= new JsonObject();
+           String geo=node_pointer.getLocation().x()+","+node_pointer.getLocation().y()+","+node_pointer.getLocation().z();
+           n.addProperty("pos",geo);
+           n.addProperty("id",node_pointer.getKey());
+           graph_nodes.add(n);
+       }
+
+       //add the the edges to the file:
+        ArrayList<edge_data> container=new ArrayList<>();
+        for (int i=0; i< graph.nodeSize(); i++){
+            node_data n_pointer = gNodes.get(i); //original node pointer.
+            int src=n_pointer.getKey();
+            ArrayList<edge_data> nEdges=(ArrayList<edge_data>) graph.getE(src);
+            for (int j=0; j< nEdges.size(); j++){
+                int dest=nEdges.get(j).getDest();
+                double weight=nEdges.get(j).getWeight();
+                edge_data edge_pointer=graph.getEdge(src,dest);
+                //if the edge is not in the file:
+                if(!container.contains(edge_pointer)){
+                    JsonObject e=new JsonObject();
+                    e.addProperty("srs",src);
+                    e.addProperty("w",weight);
+                    e.addProperty("dest",dest);
+                    graph_edges.add(e);
+                    container.add(edge_pointer);
+                }
+            }
         }
-        catch(FileNotFoundException e){
+
+        g.add("Edges",graph_edges);
+        g.add("Nodes",graph_nodes);
+
+        try{
+            Gson gson=new Gson();
+            FileWriter fileWriter=new FileWriter(file);
+            fileWriter.write(gson.toJson(g));
+            fileWriter.close();
+        } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
+
         return true;
     }
 
     @Override
     public boolean load(String file) {
         try{
-            GsonBuilder builder=new GsonBuilder();
-            builder.registerTypeAdapter(DWGraph_DS.class, new JasonDeserialize());
-            Gson gson=builder.create();
-            FileReader fileReader=new FileReader(file);
-            directed_weighted_graph g=gson.fromJson(fileReader, DWGraph_DS.class);
-            this.graph=g;
+            Reader reader=Files.newBufferedReader(Paths.get(file));
+            JsonObject obj= JsonParser.parseReader(reader).getAsJsonObject();
+
+            JsonArray graph_nodes=obj.getAsJsonArray("Nodes");
+            JsonArray graph_edges=obj.getAsJsonArray("Edges");
+
+            //create all the nodes and add them to the graph accordingly the Gson file:
+            for(int i=0; i<graph_nodes.size(); i++){
+                NodeG n=new NodeG(graph_nodes.get(i).getAsJsonObject().get("id").getAsInt());
+                String p=graph_nodes.get(i).getAsJsonObject().get("op").getAsString();
+                double[] geoArr=new double[3];
+                int j=0;
+                for(String geo : p.split(",")){
+                    geoArr[i]=Double.parseDouble(geo);
+                    j++;
+                }
+                geo_location geo=new GeoLocation(geoArr[0],geoArr[1],geoArr[2]);
+                n.setLocation(geo);
+                graph.addNode(n);
+            }
+
+            //create the edges and add them to the graph accordingly the Gson file:
+            for (int i=0; i<graph_edges.size(); i++){
+                int src=graph_edges.get(i).getAsJsonObject().get("src").getAsInt();
+                int dest=graph_edges.get(i).getAsJsonObject().get("dest").getAsInt();
+                double w=graph_edges.get(i).getAsJsonObject().get("w").getAsInt();
+                graph.connect(src,dest,w);
+            }
         }
-        catch (FileNotFoundException e){
+        catch (IOException e) {
             e.printStackTrace();
             return false;
         }
