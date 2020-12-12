@@ -1,15 +1,18 @@
 package api;
 
+import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import com.google.gson.Gson;
-import com.google.gson.*;
 import java.io.PrintWriter;
+import java.io.*;
+import com.google.gson.GsonBuilder;
 
 
 
-public class DWGraph_Algo implements dw_graph_algorithms{
+public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
     directed_weighted_graph graph;
     directed_weighted_graph opsit_graph;
 
@@ -82,13 +85,35 @@ public class DWGraph_Algo implements dw_graph_algorithms{
 
     @Override
     public boolean save(String file) {
-
+        Gson gson =new GsonBuilder().setPrettyPrinting().create();
+        String json=gson.toJson(graph);
+        try {
+            File file_address=new File(file);
+            PrintWriter pw=new PrintWriter(file_address);
+            pw.write(json);
+            pw.close();
+        }
+        catch(FileNotFoundException e){
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
     @Override
     public boolean load(String file) {
-
+        try{
+            GsonBuilder builder=new GsonBuilder();
+            builder.registerTypeAdapter(DWGraph_DS.class, new JasonDeserialize());
+            Gson gson=builder.create();
+            FileReader fileReader=new FileReader(file);
+            directed_weighted_graph g=gson.fromJson(fileReader, DWGraph_DS.class);
+            this.graph=g;
+        }
+        catch (FileNotFoundException e){
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
