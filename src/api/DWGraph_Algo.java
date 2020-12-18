@@ -5,6 +5,7 @@ import java.awt.desktop.FilesEvent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import com.google.gson.*;
 import java.io.*;
@@ -34,32 +35,33 @@ public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
 
     @Override
     public directed_weighted_graph copy() {
-        directed_weighted_graph g_c=new DWGraph_DS();
+        directed_weighted_graph g_c = new DWGraph_DS();
 
-        //copy all the nodes:
-        ArrayList<node_data> g_n= (ArrayList<node_data>)graph.getV();
-        for(int i=0; i<graph.nodeSize(); i++){
-            node_data original_node= g_n.get(i);//node key
-            node_data n= new NodeG(original_node.getKey());
+        Iterator<node_data> iter = graph.getV().iterator();
+        while (iter.hasNext()) {
+            node_data original_node = iter.next();
+            node_data n = new NodeG(original_node.getKey());
             n.setInfo(original_node.getInfo());
             n.setLocation(original_node.getLocation());
             n.setWeight(original_node.getWeight());
             //n.setTag(original_node.getTag());
             g_c.addNode(n);
-            }
+
+        }
 
         //copy all the edges;
-        for (int i=0; i< graph.nodeSize(); i++){
-            node_data n_pointer = g_n.get(i); //original node pointer.
-            int src=n_pointer.getKey();
-            ArrayList<edge_data> n_e=(ArrayList<edge_data>) graph.getE(src);
-            for (int j=0; j<n_e.size(); j++){
-                int dest=n_e.get(j).getDest();
-                double weight=n_e.get(j).getWeight();
+        iter = graph.getV().iterator();
+        while (iter.hasNext()) {
+            node_data n_pointer = iter.next();
+            int src = n_pointer.getKey();
+            Iterator<edge_data> iterEdge=graph.getE(src).iterator();
+            while (iterEdge.hasNext()){
+                edge_data e=iterEdge.next();
+                int dest=e.getDest();
+                double weight=e.getWeight();
                 g_c.connect(src,dest,weight);
             }
         }
-
         return g_c;
     }
 
@@ -81,7 +83,9 @@ public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
 
     @Override
     public List<node_data> shortestPath(int src, int dest) {
-        return shorterPathAid(src,dest, copy());
+        directed_weighted_graph gc=copy();
+       List<node_data> ans=shorterPathAid(src,dest, gc);
+        return ans;
     }
 
     @Override
@@ -295,25 +299,54 @@ public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
             return ans;
         }
 
-        node_data node_pointer =g.getNode(dest);
-        while(paths.containsKey(src)==false){
-           int nKey= node_pointer.getKey();
-           ArrayList<edge_data> node_edges=(ArrayList<edge_data>)g.getE(nKey);
-          double pathOfNodePointer=paths.get(nKey);
 
-           for (int i=0; i<node_edges.size(); i++){
-               int nodeFrom =node_edges.get(i).getSrc();
-               double edge_weight=node_edges.get(i).getWeight();
-               double nodePath=paths.get(nodeFrom);
-               if((edge_weight+nodePath)==pathOfNodePointer) {
-                   ans.add(g.getNode(nodeFrom));
-                   src=nodeFrom;
-                   i=Integer.MAX_VALUE;
-               }
-           }
+        node_data node_pointer =g.getNode(dest);
+        while (ans.contains(g.getNode(src))==false){
+            int nKey= node_pointer.getKey();
+
+            double pathOfNodePointer=paths.get(nKey);
+            Iterator<node_data> graphNodes=g.getV().iterator();
+            while (graphNodes.hasNext()){
+                if(ans.contains(g.getNode(src))==true){
+                    break;
+                }
+                node_data Npointer=graphNodes.next();
+                Iterator<edge_data> nodeEdges=g.getE(Npointer.getKey()).iterator();
+                while (nodeEdges.hasNext()){
+                    edge_data eP=nodeEdges.next(); //edge pointer;
+                    if(eP.getDest()==nKey){
+                        double eWeight= eP.getWeight();
+                        double destWeight= paths.get(nKey);
+                        double srsWeight=paths.get(eP.getSrc());
+                        if((srsWeight+eWeight)==destWeight){
+                            int kkk=eP.getSrc();
+                            ans.add(g.getNode(eP.getSrc()));
+                            nKey=kkk;
+                            break;
+                        }
+                    }
+                }
+            }
         }
+
+
+//        while(ans.contains(src)==false){
+//           int nKey= node_pointer.getKey();
+//           ArrayList<edge_data> node_edges=(ArrayList<edge_data>)g.getE(nKey);
+//          double pathOfNodePointer=paths.get(nKey);
+//           for (int i=0; i<node_edges.size(); i++){
+//               int nodeFrom =node_edges.get(i).getSrc();
+//               double edge_weight=node_edges.get(i).getWeight();
+//               double nodePath=paths.get(nodeFrom);
+//               if((edge_weight+nodePath)==pathOfNodePointer) {
+//                   ans.add(g.getNode(nodeFrom));
+//                   src=nodeFrom;
+//                   i=Integer.MAX_VALUE;
+//               }
+//           }
+//        }
         ArrayList<node_data> finalAns=new ArrayList<>();
-        for (int i=ans.size()-1; i<-1; i--){
+        for (int i=ans.size()-1; i>-1; i--){
             finalAns.add(ans.get(i));
         }
         return ans;
