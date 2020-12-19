@@ -103,6 +103,13 @@ class DWGraph_AlgoTest {
 
     @Test
     void shortestPath() {
+        directed_weighted_graph g=connectedGraph2();
+        DWGraph_Algo gAlgo=new DWGraph_Algo();
+        gAlgo.init(g);
+        //assertEquals(1,gAlgo.shortestPath(0,1).size());
+        assertEquals(2,gAlgo.shortestPath(0,2).size());
+        assertEquals(1,gAlgo.shortestPath(0,5).size());
+        assertEquals(2,gAlgo.shortestPath(3,5).size());
     }
 
     @Test
