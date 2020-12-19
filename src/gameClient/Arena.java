@@ -45,6 +45,7 @@ public class Arena {
 		this._agents = f;
 	}
 	public void setGraph(directed_weighted_graph g) {this._gg =g;}//init();}
+
 	private void init( ) {
 		MIN=null; MAX=null;
 		double x0=0,x1=0,y0=0,y1=0;
@@ -81,7 +82,7 @@ public class Arena {
 		ArrayList<CL_Agent> ans = new ArrayList<CL_Agent>();
 		try {
 			JSONObject ttt = new JSONObject(aa);
-			JSONArray ags = ttt.getJSONArray("Agents");
+			JSONArray ags = ttt.getJSONArray("Agents");//array of agents.
 			for(int i=0;i<ags.length();i++) {
 				CL_Agent c = new CL_Agent(gg,0);
 				c.update(ags.get(i).toString());
@@ -105,8 +106,10 @@ public class Arena {
 				double v = pk.getDouble("value");
 				//double s = 0;//pk.getDouble("speed");
 				String p = pk.getString("pos");
-				CL_Pokemon f = new CL_Pokemon(new Point3D(p), t, v, 0, null);
+				CL_Pokemon f = new CL_Pokemon(new Poin t3D(p), t, v, 0, null);
 				ans.add(f);
+
+
 			}
 		}
 		catch (JSONException e) {e.printStackTrace();}
@@ -121,7 +124,7 @@ public class Arena {
 			while(iter.hasNext()) {
 				edge_data e = iter.next();
 				boolean f = isOnEdge(fr.getLocation(), e,fr.getType(), g);
-				if(f) {fr.set_edge(e);}
+				if(f) {fr.set_edge(g);}
 			}
 		}
 	}

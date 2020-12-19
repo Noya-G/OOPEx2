@@ -183,6 +183,9 @@ public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
             e.printStackTrace();
             return false;
         }
+        catch (Exception e){
+
+        }
         return true;
     }
 
@@ -300,6 +303,7 @@ public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
         }
 
         node_data np=g.getNode(dest);
+        ans.add(g.getNode(dest));
 //        node_data node_pointer =g.getNode(dest);
         while(!ans.contains(g.getNode(src))){
             Iterator<node_data> graphNodes=g.getV().iterator();
@@ -334,27 +338,16 @@ public class DWGraph_Algo implements dw_graph_algorithms, Serializable {
 
         }
 
-
-//        while(ans.contains(src)==false){
-//           int nKey= node_pointer.getKey();
-//           ArrayList<edge_data> node_edges=(ArrayList<edge_data>)g.getE(nKey);
-//          double pathOfNodePointer=paths.get(nKey);
-//           for (int i=0; i<node_edges.size(); i++){
-//               int nodeFrom =node_edges.get(i).getSrc();
-//               double edge_weight=node_edges.get(i).getWeight();
-//               double nodePath=paths.get(nodeFrom);
-//               if((edge_weight+nodePath)==pathOfNodePointer) {
-//                   ans.add(g.getNode(nodeFrom));
-//                   src=nodeFrom;
-//                   i=Integer.MAX_VALUE;
-//               }
-//           }
-//        }
+        int gvvv=ans.size();
+        for(int i=0; i<ans.size(); i++){
+            int ygvvv=ans.get(i).getKey();
+            int y=0;
+        }
         ArrayList<node_data> finalAns=new ArrayList<>();
         for (int i=ans.size()-1; i>-1; i--){
             finalAns.add(ans.get(i));
         }
-        return ans;
+        return finalAns;
     }
 
     private double shorterPathAid0(int src, int dest, directed_weighted_graph g){

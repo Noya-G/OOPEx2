@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
 
 class DWGraph_AlgoTest {
 
@@ -106,10 +107,16 @@ class DWGraph_AlgoTest {
         directed_weighted_graph g=connectedGraph2();
         DWGraph_Algo gAlgo=new DWGraph_Algo();
         gAlgo.init(g);
-        //assertEquals(1,gAlgo.shortestPath(0,1).size());
-        assertEquals(2,gAlgo.shortestPath(0,2).size());
-        assertEquals(1,gAlgo.shortestPath(0,5).size());
-        assertEquals(2,gAlgo.shortestPath(3,5).size());
+        assertEquals(2,gAlgo.shortestPath(0,1).size());
+        assertEquals(3,gAlgo.shortestPath(0,2).size());
+        assertEquals(2,gAlgo.shortestPath(0,5).size());
+        assertEquals(3,gAlgo.shortestPath(3,5).size());
+
+        List<node_data> nList=gAlgo.shortestPath(0,2);
+        assertEquals(0,nList.get(0).getKey());
+        assertEquals(1,nList.get(1).getKey());
+        assertEquals(2,nList.get(2).getKey());
+
     }
 
     @Test

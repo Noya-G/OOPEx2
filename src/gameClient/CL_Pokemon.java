@@ -2,6 +2,7 @@ package gameClient;
 import api.edge_data;
 import gameClient.util.Point3D;
 import org.json.JSONObject;
+import api.*;
 
 public class CL_Pokemon {
 	private edge_data _edge;
@@ -15,7 +16,7 @@ public class CL_Pokemon {
 		_type = t;
 	//	_speed = s;
 		_value = v;
-		set_edge(e);
+//		set_edge(g,e);
 		_pos = p;
 		min_dist = -1;
 		min_ro = -1;
@@ -37,8 +38,9 @@ public class CL_Pokemon {
 		return _edge;
 	}
 
-	public void set_edge(edge_data _edge) {
-		this._edge = _edge;
+	public void set_edge(directed_weighted_graph g) {
+		geo_location geo=_pos;
+		this._edge = findEdge(g,geo);
 	}
 
 	public Point3D getLocation() {
@@ -63,4 +65,35 @@ public class CL_Pokemon {
 	public void setMin_ro(int min_ro) {
 		this.min_ro = min_ro;
 	}
+
+	/**
+	 * using triangle inequality, the algorithm search with BFS for an edge u,v such that dist(u,pos) + dist(pos,v) = dist(u,v)
+	 * @param pos
+	 * @return edge_data
+	 */
+	private edge_data findEdge(directed_weighted_graph g,geo_location pos) {
+		for (node_data v : g.getV()) {
+			int src = v.getKey();
+			for (edge_data e : g.getE(v.getKey())) {
+				int dest = e.getDest();
+				node_data dest_node = g.getNode(dest);
+				if (_type > 0 && src < dest || _type < 0 && src > dest) {
+					geo_location src_loc = v.getLocation();
+					geo_location dest_loc = dest_node.getLocation();
+					double line = src_loc.distance(dest_loc);
+					double line_through_pos = src_loc.distance(pos) + pos.distance(dest_loc);
+					if (line > line_through_pos - 0.0000001) {
+						return e;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public void updateLoc(directed_weighted_graph g){
+
+	}
+
+
 }

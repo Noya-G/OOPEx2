@@ -177,7 +177,7 @@ public class DWGraph_DS implements directed_weighted_graph, Iterator {
 
         @Override
         public String getInfo() {
-            return null;
+            return info;
         }
 
         @Override
