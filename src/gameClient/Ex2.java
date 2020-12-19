@@ -5,29 +5,39 @@ import api.dw_graph_algorithms;
 import api.game_service;
 import Server.Game_Server_Ex2;
 import api.*;
+import com.google.gson.Gson;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 
+import javax.swing.plaf.synth.SynthTableHeaderUI;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 public class Ex2 implements Runnable {
     private static MyFrame _win;
     private static Arena _ar;
 
     public static void main(String[] a) {
-        Thread client = new Thread(new Ex2_Client());
+        Thread client = new Thread(new Ex2());
         client.start();
+        client.setName("client thread");
+
     }
 
     @Override
     public void run() {
-        int scenario_num = 1;
+        int scenario_num = 0;
         game_service game = Game_Server_Ex2.getServer(scenario_num); // you have [0,23] games
         int id = 312321722;
         game.login(id);
         String g = game.getGraph();
+        System.out.println(g);
         String pks = game.getPokemons();
-        directed_weighted_graph gg = game.getJava_Graph_Not_to_be_used();
+        directed_weighted_graph gg = jsonAdptorGraph(g);
         init(game);
 
 
@@ -36,8 +46,44 @@ public class Ex2 implements Runnable {
         int ind = 0;
         long dt = 100;
 
+        String lg = game.move();
+        List<CL_Agent> log = Arena.getAgents(lg, gg);
+        _ar.setAgents(log);
+
+        String fs = game.getPokemons();
+        List<CL_Pokemon> pokemons = Arena.json2Pokemons(fs);
+        _ar.setPokemons(pokemons);
+
+        for (int i = 0; i < pokemons.size(); i++) {
+            System.out.println("llllllllll");
+            edge_data e = pocEdge(pokemons.get(i));
+            pokemons.get(i).set_edge(e);
+        }
+
+        ArrayList<SmurtMoves> SM = new ArrayList<>();
+        System.out.println("thread: " + Thread.currentThread().getName());
+
+        for (int i = 0; i < log.size(); i++) {
+            SM.add(new SmurtMoves(log.get(i), pokemons, _ar, game));
+        }
+
+
+        ArrayList<Thread> agentThread = new ArrayList<>();
+
+
+        int threadNum = log.size();
+        int count = 0;
         while (game.isRunning()) {
-            moveAgants(game, _ar.getGraph() );
+            for (int i = 0; i < pokemons.size(); i++) {
+                System.out.println("llllllllll");
+                edge_data e = pocEdge(pokemons.get(i));
+                pokemons.get(i).set_edge(e);
+            }
+//            System.out.println("while thread: "+Thread.currentThread().getName());
+            for (int i = 0; i < log.size(); i++) {
+                agentThread.add(new Thread(SM.get(i)));
+                agentThread.get(i).run();
+            }
             try {
                 if (ind % 1 == 0) {
                     _win.repaint();
@@ -82,14 +128,14 @@ public class Ex2 implements Runnable {
 //                System.out.println("Agent: " + id + ", val: " + v + "   turned to node: " + dest);
 //            }
 //        }
-        ArrayList<Object> a=chooseAgentToMove(log,ffs);
-        CL_Agent ag=(CL_Agent)a.get(0);
-        CL_Pokemon poc=(CL_Pokemon) a.get(1);
-        ArrayList<node_data> path=(ArrayList<node_data>)a.get(2);
-       for(int i=0; i<path.size(); i++){
-           game.chooseNextEdge(ag.getID(),path.get(i).getKey());
-           System.out.println("Agent: " + ag.getID() + ", val: " + ag.getValue() + "   turned to node: " + path.get(i).getKey());
-       }
+        ArrayList<Object> a = chooseAgentToMove(log, ffs);
+        CL_Agent ag = (CL_Agent) a.get(0);
+        CL_Pokemon poc = (CL_Pokemon) a.get(1);
+        ArrayList<node_data> path = (ArrayList<node_data>) a.get(2);
+        for (int i = 0; i < path.size(); i++) {
+            game.chooseNextEdge(ag.getID(), path.get(i).getKey());
+            System.out.println("Agent: " + ag.getID() + ", val: " + ag.getValue() + "   turned to node: " + path.get(i).getKey());
+        }
 
     }
 
@@ -176,30 +222,29 @@ public class Ex2 implements Runnable {
 
 
     private static ArrayList<Object> chooseAgentToMove(List<CL_Agent> agents, List<CL_Pokemon> pokemons) {
-        ArrayList<Object> ans=new ArrayList<>();
+        ArrayList<Object> ans = new ArrayList<>();
         CL_Pokemon destPoc = pokemons.get(0);
         CL_Agent srcAgent = agents.get(0);
         directed_weighted_graph gameGraphPointer = _ar.getGraph();
         dw_graph_algorithms gAlgo = new DWGraph_Algo();
         gAlgo.init(_ar.getGraph());
-        ArrayList<node_data> SP=giveShorterPath(srcAgent,destPoc);
+        ArrayList<node_data> SP = giveShorterPath(srcAgent, destPoc);
 
-        for(int i=0; i<agents.size(); i++){
-            CL_Agent agentPointer=agents.get(i);
-            for(int j=0; j<pokemons.size(); j++){
-                CL_Pokemon pokemonPointer=pokemons.get(j);
-                if(SP==null){
-                    SP=giveShorterPath(srcAgent,destPoc);
-                }
-                else{
-                    ArrayList<node_data> SP2=giveShorterPath(agentPointer,pokemonPointer);
-                    if(SP2!=null){
-                        if(SP.size()>SP2.size()){
+        for (int i = 0; i < agents.size(); i++) {
+            CL_Agent agentPointer = agents.get(i);
+            for (int j = 0; j < pokemons.size(); j++) {
+                CL_Pokemon pokemonPointer = pokemons.get(j);
+                if (SP == null) {
+                    SP = giveShorterPath(srcAgent, destPoc);
+                } else {
+                    ArrayList<node_data> SP2 = giveShorterPath(agentPointer, pokemonPointer);
+                    if (SP2 != null) {
+                        if (SP.size() > SP2.size()) {
                             ans.clear();
-                          SP=giveShorterPath(agentPointer,pokemonPointer);
-                          ans.add(agentPointer);
-                          ans.add(pokemonPointer);
-                          ans.add(SP);
+                            SP = giveShorterPath(agentPointer, pokemonPointer);
+                            ans.add(agentPointer);
+                            ans.add(pokemonPointer);
+                            ans.add(SP);
                         }
                     }
                 }
@@ -213,30 +258,103 @@ public class Ex2 implements Runnable {
      * return shorter path.
      * return null if the is no path.
      * return null if the shorter Path didnt work
+     *
      * @param agent
      * @param pokemon
      * @return
      */
-    public static ArrayList<node_data> giveShorterPath(CL_Agent agent, CL_Pokemon pokemon){
-        int srcAgent=agent.get_curr_edge().getDest();
-        int srcPokemon=pokemon.get_edge().getSrc();
-        int destPokemon=pokemon.get_edge().getDest();
+    public static ArrayList<node_data> giveShorterPath(CL_Agent agent, CL_Pokemon pokemon) {
+        int srcAgent = agent.get_curr_edge().getDest();
+        int srcPokemon = pokemon.get_edge().getSrc();
+        int destPokemon = pokemon.get_edge().getDest();
 
-        DWGraph_Algo gAlgo=new DWGraph_Algo();
+        DWGraph_Algo gAlgo = new DWGraph_Algo();
         gAlgo.init(_ar.getGraph());
 
-        if(gAlgo.shortestPath(srcAgent,srcPokemon)!=null){
-            if(gAlgo.shortestPath(srcPokemon,destPokemon)!=null){
-                if(gAlgo.shortestPath(srcAgent,srcPokemon).size()==1){
-                    return (ArrayList<node_data>)gAlgo.shortestPath(srcAgent,srcPokemon);
-                }
-                else{
-                   return null;
+        if (gAlgo.shortestPath(srcAgent, srcPokemon) != null) {
+            if (gAlgo.shortestPath(srcPokemon, destPokemon) != null) {
+                if (gAlgo.shortestPath(srcAgent, srcPokemon).size() == 1) {
+                    return (ArrayList<node_data>) gAlgo.shortestPath(srcAgent, srcPokemon);
+                } else {
+                    return null;
                 }
             }
         }
         return null;
     }
 
+    private edge_data pocEdge(CL_Pokemon pok) {
+        edge_data ans = null;
+        double geoX = pok.getLocation().x();
+        double geoY = pok.getLocation().y();
+
+        directed_weighted_graph gg = _ar.getGraph();
+        Iterator<node_data> iter = gg.getV().iterator();
+        while (iter.hasNext()) {
+            node_data n = iter.next();
+            Iterator<edge_data> itr = gg.getE(n.getKey()).iterator();
+            while (itr.hasNext()) {
+                edge_data e = itr.next();
+                int srcN = e.getSrc();
+                int destN = e.getDest();
+                double srcX = gg.getNode(srcN).getLocation().x();
+                double srcY = gg.getNode(srcN).getLocation().y();
+
+                double destX = gg.getNode(destN).getLocation().x();
+                double destY = gg.getNode(destN).getLocation().y();
+
+                double m = (srcY - destY) / (srcX - destX);
+
+                double line = srcY - (srcX * m);
+
+                double fi = geoY - (m * geoX);
+
+                if (((fi * 100000.0) / 100000.0) == ((line * 100000.0) / 100000.0)) {
+                    System.out.println("----DEBUG----- src:"+e.getSrc()+", dest: "+e.getDest()+" ----DEBUG-----");
+                    return e;
+                }
+            }
+        }
+        System.out.println("----DEBUG----- src:"+ans.getSrc()+", dest: "+ans.getDest()+" ----DEBUG-----");
+        return ans;
+    }
+
+    private directed_weighted_graph jsonAdptorGraph(String s) {
+        directed_weighted_graph graph = new DWGraph_DS();
+        try {
+            JSONObject obj = new JSONObject(s);
+            JSONArray graph_nodes = obj.getJSONArray("Nodes");
+            JSONArray graph_edges = obj.getJSONArray("Edges");
+
+            //create all the nodes and add them to the graph accordingly the Gson file:
+            for (int i = 0; i < graph_nodes.length(); i++) {
+                JSONObject pp = graph_nodes.getJSONObject(i);
+                int src = pp.getInt("id");
+                NodeG n = new NodeG(src);
+                String p = pp.getString("pos");
+                double[] geoArr = new double[3];
+                int j = 0;
+                for (String geo : p.split(",")) {
+                    geoArr[j] = Double.parseDouble(geo);
+                    j++;
+                }
+                geo_location geo = new GeoLocation(geoArr[0], geoArr[1], geoArr[2]);
+                n.setLocation(geo);
+                graph.addNode(n);
+            }
+
+            //create the edges and add them to the graph accordingly the Gson file:
+            for (int i=0; i<graph_edges.length(); i++){
+                int src=graph_edges.getJSONObject(i).getInt("src");
+                int dest=graph_edges.getJSONObject(i).getInt("dest");
+                double w=graph_edges.getJSONObject(i).getDouble("w");
+                graph.connect(src,dest,w);
+            }
+        }
+        catch (JSONException e){
+            e.printStackTrace();
+        }
+            return graph;
+    }
 
 }
