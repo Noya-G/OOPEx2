@@ -69,7 +69,7 @@ public class MyFrame extends JFrame{
 			Iterator<edge_data> itr = gg.getE(n.getKey()).iterator();
 			while(itr.hasNext()) {
 				edge_data e = itr.next();
-				g.setColor(Color.gray);
+				g.setColor(Color.BLACK);
 				drawEdge(e, g);
 			}
 		}
