@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.*;
 
 import javax.swing.plaf.synth.SynthTableHeaderUI;
+import javax.tools.Tool;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -35,62 +36,24 @@ public class Ex2 implements Runnable {
         int id = 312321722;
         game.login(id);
         String g = game.getGraph();
-        System.out.println(g);
         String pks = game.getPokemons();
-        directed_weighted_graph gg = jsonAdptorGraph(g);
+        directed_weighted_graph gg = game.getJava_Graph_Not_to_be_used();
         init(game);
 
 
         game.startGame();
-        _win.setTitle("Ex2 - OOP: (NONE trivial Solution) " + game.toString());
-        int ind = 0;
-        long dt = 100;
+        _win.setTitle("Ex2 - OOP: (NONE trivial Solution) "+game.toString());
+        int ind=0;
+        long dt=100;
 
-        String lg = game.move();
-        List<CL_Agent> log = Arena.getAgents(lg, gg);
-        _ar.setAgents(log);
-
-        String fs = game.getPokemons();
-        List<CL_Pokemon> pokemons = Arena.json2Pokemons(fs);
-        _ar.setPokemons(pokemons);
-
-        for (int i = 0; i < pokemons.size(); i++) {
-            System.out.println("llllllllll");
-            edge_data e = pocEdge(pokemons.get(i));
-            pokemons.get(i).set_edge(e);
-        }
-
-        ArrayList<SmurtMoves> SM = new ArrayList<>();
-        System.out.println("thread: " + Thread.currentThread().getName());
-
-        for (int i = 0; i < log.size(); i++) {
-            SM.add(new SmurtMoves(log.get(i), pokemons, _ar, game));
-        }
-
-
-        ArrayList<Thread> agentThread = new ArrayList<>();
-
-
-        int threadNum = log.size();
-        int count = 0;
-        while (game.isRunning()) {
-            for (int i = 0; i < pokemons.size(); i++) {
-                System.out.println("llllllllll");
-                edge_data e = pocEdge(pokemons.get(i));
-                pokemons.get(i).set_edge(e);
-            }
-//            System.out.println("while thread: "+Thread.currentThread().getName());
-            for (int i = 0; i < log.size(); i++) {
-                agentThread.add(new Thread(SM.get(i)));
-                agentThread.get(i).run();
-            }
+        while(game.isRunning()) {
+            moveAgants(game, gg);
             try {
-                if (ind % 1 == 0) {
-                    _win.repaint();
-                }
+                if(ind%1==0) {_win.repaint();}
                 Thread.sleep(dt);
                 ind++;
-            } catch (Exception e) {
+            }
+            catch(Exception e) {
                 e.printStackTrace();
             }
         }
@@ -100,48 +63,38 @@ public class Ex2 implements Runnable {
         System.exit(0);
     }
 
-    /**
-     * Moves each of the agents along the edge,
-     * in case the agent is on a node the next destination (next edge) is chosen (randomly).
-     *
-     * @param game
-     * @param gg
-     * @param
-     */
     private static void moveAgants(game_service game, directed_weighted_graph gg) {
         String lg = game.move();
+//		System.out.println("movse:"+game.move());
         List<CL_Agent> log = Arena.getAgents(lg, gg);
         _ar.setAgents(log);
         //ArrayList<OOP_Point3D> rs = new ArrayList<OOP_Point3D>();
-        String fs = game.getPokemons();
+        String fs =  game.getPokemons();
         List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
         _ar.setPokemons(ffs);
-//        for (int i = 0; i < log.size(); i++) {
-//            CL_Agent ag = log.get(i);
-//            int id = ag.getID();
-//            int dest = ag.getNextNode();
-//            int src = ag.getSrcNode();
-//            double v = ag.getValue();
-//            if (dest == -1) {
-//                dest = nextNode(gg, src);
-//                game.chooseNextEdge(ag.getID(), dest);
-//                System.out.println("Agent: " + id + ", val: " + v + "   turned to node: " + dest);
-//            }
-//        }
-        ArrayList<Object> a = chooseAgentToMove(log, ffs);
-        CL_Agent ag = (CL_Agent) a.get(0);
-        CL_Pokemon poc = (CL_Pokemon) a.get(1);
-        ArrayList<node_data> path = (ArrayList<node_data>) a.get(2);
-        for (int i = 0; i < path.size(); i++) {
-            game.chooseNextEdge(ag.getID(), path.get(i).getKey());
-            System.out.println("Agent: " + ag.getID() + ", val: " + ag.getValue() + "   turned to node: " + path.get(i).getKey());
+        setPokEdges(ffs,gg);
+
+//		System.out.println("pok: "+ffs.get(0).get_edge() );
+        for(int i=0;i<log.size();i++) {
+            CL_Agent ag = log.get(i);
+            Thread thread=new Thread( new SmurtMoves(ag,ffs,_ar,game));
+            String name=""+i;
+            thread.setName(name);
+            thread.run();
+            int id = ag.getID();
+            int dest = ag.getNextNode();
+            int src = ag.getSrcNode();
+            double v = ag.getValue();
+            if(dest==-1) {
+                dest = nextNode(gg, src);
+                System.out.println("dest: "+dest);
+                game.chooseNextEdge(ag.getID(), dest);
+                System.out.println("Agent: "+id+", val: "+v+"   turned to node: "+dest);
+            }
         }
-
     }
-
     /**
      * a very simple random walk implementation!
-     *
      * @param g
      * @param src
      * @return
@@ -151,12 +104,9 @@ public class Ex2 implements Runnable {
         Collection<edge_data> ee = g.getE(src);
         Iterator<edge_data> itr = ee.iterator();
         int s = ee.size(); //
-        int r = (int) (Math.random() * s);
-        int i = 0;
-        while (i < r) {
-            itr.next();
-            i++;
-        }
+        int r = (int)(Math.random()*s);
+        int i=0;
+        while(i<r) {itr.next();i++;}
         ans = itr.next().getDest();
         return ans;
     }
@@ -169,7 +119,7 @@ public class Ex2 implements Runnable {
         _ar = new Arena();
         _ar.setGraph(gg);
         _ar.setPokemons(Arena.json2Pokemons(fs));
-        _win = new MyFrame("test Ex2");
+        _win = new MyFrame("Ex2");
         _win.setSize(1000, 700);
         _win.update(_ar);
 
@@ -299,20 +249,25 @@ public class Ex2 implements Runnable {
                 int destN = e.getDest();
                 double srcX = gg.getNode(srcN).getLocation().x();
                 double srcY = gg.getNode(srcN).getLocation().y();
-
                 double destX = gg.getNode(destN).getLocation().x();
                 double destY = gg.getNode(destN).getLocation().y();
-
                 double m = (srcY - destY) / (srcX - destX);
-
                 double line = srcY - (srcX * m);
-
+                double c=srcY-(m*srcX);
                 double fi = geoY - (m * geoX);
-
-                if (((fi * 100000.0) / 100000.0) == ((line * 100000.0) / 100000.0)) {
+                double[] arr= new double[2];
+                arr[0]=geoX;
+                arr[1]=geoY;
+                onTheLine(m,c,arr);
+                if(onTheLine(m,c,arr)){
                     System.out.println("----DEBUG----- src:"+e.getSrc()+", dest: "+e.getDest()+" ----DEBUG-----");
                     return e;
                 }
+
+//                if (((fi * 100000.0) / 100000.0) == ((line * 100000.0) / 100000.0)) {
+//                    System.out.println("----DEBUG----- src:"+e.getSrc()+", dest: "+e.getDest()+" ----DEBUG-----");
+//                    return e;
+//                }
             }
         }
         System.out.println("----DEBUG----- src:"+ans.getSrc()+", dest: "+ans.getDest()+" ----DEBUG-----");
@@ -357,4 +312,34 @@ public class Ex2 implements Runnable {
             return graph;
     }
 
+    private boolean onTheLine(double m, double c, double[] point){
+        double x0=point[0];
+        double y0=point[1];
+       if(Math.round(y0)==Math.round((m*x0)+c)){
+            return true;
+       }
+        return false;
+    }
+
+    private void upDate(game_service game, directed_weighted_graph graph){
+        String lg = game.move();
+
+        List<CL_Agent> log = Arena.getAgents(lg, graph);
+        _ar.setAgents(log);
+
+        String fs =  game.getPokemons();
+        List<CL_Pokemon> pokemons = Arena.json2Pokemons(fs);
+        _ar.setPokemons(pokemons);
+
+        for (int i = 0; i < pokemons.size(); i++) {
+            pokemons.get(i).set_edge(graph);
+        }
+    }
+
+    private static void setPokEdges(List<CL_Pokemon> pokemons, directed_weighted_graph graph){
+        for(int i=0; i<pokemons.size(); i++ ){
+            CL_Pokemon pointer=pokemons.get(i);
+            pointer.set_edge(graph);
+        }
+    }
 }
