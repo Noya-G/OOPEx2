@@ -8,6 +8,7 @@ import gameClient.util.Point3D;
 import gameClient.util.Range;
 import gameClient.util.Range2D;
 
+import javax.imageio.plugins.tiff.GeoTIFFTagSet;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Iterator;
@@ -27,6 +28,8 @@ public class MyFrame extends JFrame{
 	MyFrame(String a) {
 		super(a);
 		int _ind = 0;
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 	}
 	public void update(Arena ar) {
 		this._ar = ar;
@@ -39,6 +42,7 @@ public class MyFrame extends JFrame{
 		Range2D frame = new Range2D(rx,ry);
 		directed_weighted_graph g = _ar.getGraph();
 		_w2f = Arena.w2f(g,frame);
+
 	}
 	public void paint(Graphics g) {
 		int w = this.getWidth();
@@ -49,6 +53,8 @@ public class MyFrame extends JFrame{
 		drawGraph(g);
 		drawAgants(g);
 		drawInfo(g);
+		drawCountDown(g);
+		drawAgentInfo(g);
 		
 	}
 	private void drawInfo(Graphics g) {
@@ -126,5 +132,28 @@ public class MyFrame extends JFrame{
 		geo_location d0 = this._w2f.world2frame(d);
 		g.drawLine((int)s0.x(), (int)s0.y(), (int)d0.x(), (int)d0.y());
 	//	g.drawString(""+n.getKey(), fp.ix(), fp.iy()-4*r);
+	}
+
+	private void drawCountDown(Graphics g){
+		long t=_ar.getTime();
+		int tToPrint=(int)(t/1000);
+		String time="time Left: "+tToPrint+"'s";
+		g.drawString(time,900,50);
+	}
+
+	public void drawAgentInfo(Graphics g){
+		g.drawString("Agents:",20,50);
+		int l=50;
+		List<CL_Agent> agents=_ar.getAgents();
+		for(int i=0; i<agents.size(); i++){
+			int lo=i*20;
+			int id=agents.get(i).getID();
+			double score=agents.get(i).getScore();
+			System.out.println(id+"   ss:  "+score);
+			double speed=agents.get(i).getSpeed();
+			int x=20;
+			int y=70+lo;
+			g.drawString("id: "+id+ ", score: "+score+", speed: "+speed,x,y);
+		}
 	}
 }

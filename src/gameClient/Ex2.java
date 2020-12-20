@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import com.google.gson.GsonBuilder;
 import com.google.gson.*;
 
+import javax.swing.*;
 import javax.swing.plaf.synth.SynthTableHeaderUI;
 import javax.tools.Tool;
 import java.awt.*;
@@ -31,13 +32,13 @@ public class Ex2 implements Runnable {
 
     @Override
     public void run() {
-        int scenario_num = 0;
+        int scenario_num = 1;
         game_service game = Game_Server_Ex2.getServer(scenario_num); // you have [0,23] games
         int id = 312321722;
         game.login(id);
         String g = game.getGraph();
         String pks = game.getPokemons();
-        directed_weighted_graph gg = game.getJava_Graph_Not_to_be_used();
+        directed_weighted_graph gg = jsonAdptorGraph(g);
         init(game);
 
 
@@ -45,11 +46,22 @@ public class Ex2 implements Runnable {
         _win.setTitle("Ex2 - OOP: (NONE trivial Solution) "+game.toString());
         int ind=0;
         long dt=100;
+        _win.setTitle("level number: "+scenario_num);
+        long time=game.timeToEnd();
+
+//        Thread mangerTreads=new Thread();
+//        mangerTreads.setName("manager");
+//        try {
+//            mangerTreads.wait();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
 
         while(game.isRunning()) {
             moveAgants(game, gg);
             try {
-                if(ind%1==0) {_win.repaint();}
+                if(ind%1==0) {_win.repaint(); _ar.setTime(game.timeToEnd());}
                 Thread.sleep(dt);
                 ind++;
             }
@@ -65,12 +77,14 @@ public class Ex2 implements Runnable {
 
     private static void moveAgants(game_service game, directed_weighted_graph gg) {
         String lg = game.move();
+
 //		System.out.println("movse:"+game.move());
         List<CL_Agent> log = Arena.getAgents(lg, gg);
         _ar.setAgents(log);
         //ArrayList<OOP_Point3D> rs = new ArrayList<OOP_Point3D>();
         String fs =  game.getPokemons();
         List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
+        System.out.println(fs);
         _ar.setPokemons(ffs);
         setPokEdges(ffs,gg);
 
@@ -131,8 +145,8 @@ public class Ex2 implements Runnable {
             line = new JSONObject(info);
             JSONObject ttt = line.getJSONObject("GameServer");
             int rs = ttt.getInt("agents");
-            System.out.println(info);
-            System.out.println(game.getPokemons());
+//            System.out.println(info);
+//            System.out.println(game.getPokemons());
             int src_node = 0;  // arbitrary node, you should start at one of the pokemon
             ArrayList<CL_Pokemon> cl_fs = Arena.json2Pokemons(game.getPokemons());
             for (int a = 0; a < cl_fs.size(); a++) {
@@ -260,17 +274,10 @@ public class Ex2 implements Runnable {
                 arr[1]=geoY;
                 onTheLine(m,c,arr);
                 if(onTheLine(m,c,arr)){
-                    System.out.println("----DEBUG----- src:"+e.getSrc()+", dest: "+e.getDest()+" ----DEBUG-----");
                     return e;
                 }
-
-//                if (((fi * 100000.0) / 100000.0) == ((line * 100000.0) / 100000.0)) {
-//                    System.out.println("----DEBUG----- src:"+e.getSrc()+", dest: "+e.getDest()+" ----DEBUG-----");
-//                    return e;
-//                }
             }
         }
-        System.out.println("----DEBUG----- src:"+ans.getSrc()+", dest: "+ans.getDest()+" ----DEBUG-----");
         return ans;
     }
 
@@ -342,4 +349,9 @@ public class Ex2 implements Runnable {
             pointer.set_edge(graph);
         }
     }
+
+//    private void setFrame(MyFrame _win){
+//        _win.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//    }
+
 }

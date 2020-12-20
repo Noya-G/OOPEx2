@@ -20,8 +20,8 @@ public class CL_Agent {
 		private directed_weighted_graph _gg;
 		private CL_Pokemon _curr_fruit;
 		private long _sg_dt;
-		
 		private double _value;
+		double score;
 		
 		
 		public CL_Agent(directed_weighted_graph g, int start_node) {
@@ -31,6 +31,7 @@ public class CL_Agent {
 			_pos = _curr_node.getLocation();
 			_id = -1;
 			setSpeed(0);
+			this.score=0.0;
 		}
 		public void update(String json) {
 			JSONObject line;
@@ -114,8 +115,18 @@ public class CL_Agent {
 			return this._value;
 		}
 
+	public double getScore() {
+		return score;
+	}
 
-		//if the agent is on node
+	public void setScore(double s) {
+			double ss=score+s;
+
+			score=ss;
+		System.out.println(+getID()+"   ss:  "+score);
+	}
+
+	//if the agent is on node
 		public int getNextNode() {
 			int ans = -2;
 			if(this._curr_edge==null) {
@@ -138,6 +149,7 @@ public class CL_Agent {
 		}
 		public void set_curr_fruit(CL_Pokemon curr_fruit) {
 			this._curr_fruit = curr_fruit;
+			setScore(_curr_fruit.getValue());
 		}
 		public void set_SDT(long ddtt) {
 			long ddt = ddtt;
@@ -149,6 +161,7 @@ public class CL_Agent {
 				double dist = _pos.distance(dest);
 				if(this.get_curr_fruit().get_edge()==this.get_curr_edge()) {
 					 dist = _curr_fruit.getLocation().distance(this._pos);
+					 setScore(_curr_fruit.getValue());
 				}
 				double norm = dist/de;
 				double dt = w*norm / this.getSpeed(); 
@@ -167,3 +180,4 @@ public class CL_Agent {
 			this._sg_dt = _sg_dt;
 		}
 	}
+

@@ -7,6 +7,7 @@ import api.game_service;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,14 +23,15 @@ public class Ex2_Client implements Runnable{
 	
 	@Override
 	public void run() {
-		int scenario_num = 11;
+		int scenario_num = 23;
 		game_service game = Game_Server_Ex2.getServer(scenario_num); // you have [0,23] games
-	//	int id = 999;
-	//	game.login(id);
+		int id = 312321722;
+		game.login(id);
 		String g = game.getGraph();
 		String pks = game.getPokemons();
 		directed_weighted_graph gg = game.getJava_Graph_Not_to_be_used();
 		init(game);
+
 		
 		game.startGame();
 		_win.setTitle("Ex2 - OOP: (NONE trivial Solution) "+game.toString());
@@ -61,12 +63,14 @@ public class Ex2_Client implements Runnable{
 	 */
 	private static void moveAgants(game_service game, directed_weighted_graph gg) {
 		String lg = game.move();
+//		System.out.println("movse:"+game.move());
 		List<CL_Agent> log = Arena.getAgents(lg, gg);
 		_ar.setAgents(log);
 		//ArrayList<OOP_Point3D> rs = new ArrayList<OOP_Point3D>();
 		String fs =  game.getPokemons();
 		List<CL_Pokemon> ffs = Arena.json2Pokemons(fs);
 		_ar.setPokemons(ffs);
+//		System.out.println("pok: "+ffs.get(0).get_edge() );
 		for(int i=0;i<log.size();i++) {
 			CL_Agent ag = log.get(i);
 			int id = ag.getID();
@@ -75,6 +79,7 @@ public class Ex2_Client implements Runnable{
 			double v = ag.getValue();
 			if(dest==-1) {
 				dest = nextNode(gg, src);
+				System.out.println("dest: "+dest);
 				game.chooseNextEdge(ag.getID(), dest);
 				System.out.println("Agent: "+id+", val: "+v+"   turned to node: "+dest);
 			}
@@ -90,13 +95,14 @@ public class Ex2_Client implements Runnable{
 		int ans = -1;
 		Collection<edge_data> ee = g.getE(src);
 		Iterator<edge_data> itr = ee.iterator();
-		int s = ee.size();
+		int s = ee.size(); //
 		int r = (int)(Math.random()*s);
 		int i=0;
 		while(i<r) {itr.next();i++;}
 		ans = itr.next().getDest();
 		return ans;
 	}
+
 	private void init(game_service game) {
 		String g = game.getGraph();
 		String fs = game.getPokemons();
@@ -127,7 +133,6 @@ public class Ex2_Client implements Runnable{
 				CL_Pokemon c = cl_fs.get(ind);
 				int nn = c.get_edge().getDest();
 				if(c.getType()<0 ) {nn = c.get_edge().getSrc();}
-				
 				game.addAgent(nn);
 			}
 		}

@@ -1,9 +1,6 @@
 package gameClient;
 
-import api.directed_weighted_graph;
-import api.edge_data;
-import api.geo_location;
-import api.node_data;
+import api.*;
 import gameClient.util.Point3D;
 import gameClient.util.Range;
 import gameClient.util.Range2D;
@@ -27,6 +24,7 @@ public class Arena {
 	private List<CL_Agent> _agents;
 	private List<CL_Pokemon> _pokemons;
 	private List<String> _info;
+	private long time;
 	private static Point3D MIN = new Point3D(0, 100,0);
 	private static Point3D MAX = new Point3D(0, 100,0);
 
@@ -45,6 +43,14 @@ public class Arena {
 		this._agents = f;
 	}
 	public void setGraph(directed_weighted_graph g) {this._gg =g;}//init();}
+
+	public long getTime() {
+		return time;
+	}
+
+	public void setTimeLeft(long time){
+		this.time=time;
+	}
 
 	private void init( ) {
 		MIN=null; MAX=null;
@@ -77,6 +83,10 @@ public class Arena {
 		this._info = _info;
 	}
 
+	public void setTime(long t){
+		this.time=t;
+	}
+
 	////////////////////////////////////////////////////
 	public static List<CL_Agent> getAgents(String aa, directed_weighted_graph gg) {
 		ArrayList<CL_Agent> ans = new ArrayList<CL_Agent>();
@@ -106,10 +116,8 @@ public class Arena {
 				double v = pk.getDouble("value");
 				//double s = 0;//pk.getDouble("speed");
 				String p = pk.getString("pos");
-				CL_Pokemon f = new CL_Pokemon(new Poin t3D(p), t, v, 0, null);
+				CL_Pokemon f = new CL_Pokemon(new Point3D(p), t, v, 0, null);
 				ans.add(f);
-
-
 			}
 		}
 		catch (JSONException e) {e.printStackTrace();}
