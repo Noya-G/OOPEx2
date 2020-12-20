@@ -1,5 +1,13 @@
 # OOP_Ex2
 
+this code made as assignment at object oriented programming class.
+
+by running this code you can create direced weighted graph(to read more about weighted graph: https://en.wikipedia.org/wiki/Graph_(discrete_mathematics))
+
+this code support write the graph to text file and read it from Gson file. you also can get the shorter path from one node to anther, check if two nodes are connected and check if the graph is conncted.
+
+the graph algoritims is used to get the best score in the pokemons game.
+
 **_node used to represent vertex in a graph, here the methode that the class can perform: (NodeG class)_**
 
     /**
