@@ -112,7 +112,6 @@ public class MyFrame extends JFrame{
 			int r=8;
 			i++;
 			if(c!=null) {
-
 				geo_location fp = this._w2f.world2frame(c);
 				g.fillOval((int)fp.x()-r, (int)fp.y()-r, 2*r, 2*r);
 			}
@@ -148,8 +147,7 @@ public class MyFrame extends JFrame{
 		for(int i=0; i<agents.size(); i++){
 			int lo=i*20;
 			int id=agents.get(i).getID();
-			double score=agents.get(i).getScore();
-			System.out.println(id+"   ss:  "+score);
+			double score=agents.get(i).getValue();
 			double speed=agents.get(i).getSpeed();
 			int x=20;
 			int y=70+lo;
